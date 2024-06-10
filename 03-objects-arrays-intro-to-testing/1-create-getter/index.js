@@ -10,13 +10,13 @@ export function createGetter(path) {
     let value = obj;
     for (const key of pathKeys) {
       if (!Object.hasOwn(value, key)) {
-        return undefined;
+        return;
       }
 
       value = value[key];
 
       if (value === undefined) {
-        return undefined;
+        return;
       }
     }
 
