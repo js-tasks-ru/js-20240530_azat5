@@ -28,11 +28,11 @@ export default class ColumnChart {
 
   _createElement() {
     let tempDiv = document.createElement("div");
-    tempDiv.innerHTML = this._render();
+    tempDiv.innerHTML = this._createTemplate();
     return tempDiv.firstElementChild;
   }
 
-  _columnsHtml() {
+  _createColumnsTemplate() {
     if (!this.data) { return ""; }
 
     let maxDataValue = Math.max(...this.data);
@@ -47,25 +47,25 @@ export default class ColumnChart {
     );
   }
 
-  _linkHtml() {
+  _linkTemplate() {
     if (!this.link) { return ""; }
 
     return `<a href="${this.link}" class="column-chart__link">View all</a>`;
   }
 
-  _render() {
+  _createTemplate() {
     return `
       <div class="column-chart ${this.data || "column-chart_loading"}" style="--chart-height: ${this.chartHeight}">
         <div class="column-chart__title">
           ${this.label}
-          ${this._linkHtml()}
+          ${this._linkTemplate()}
         </div>
         <div class="column-chart__container">
           <div data-element="header" class="column-chart__header">
             ${this.formatHeading(this.value)}
           </div>
           <div data-element="body" class="column-chart__chart">
-            ${this._columnsHtml() }
+            ${this._createColumnsTemplate() }
           </div>
         </div>
       </div>
