@@ -13,8 +13,10 @@ export default class ColumnChart {
     this.remove();
   }
 
-  update(props = {}) {
-    this._init(props);
+  update(newData) {
+    this.data = newData;
+
+    this.element.replaceWith(this._createElement());
   }
 
   _init({data, label, value, link, formatHeading = h => h}) {
@@ -73,7 +75,7 @@ export default class ColumnChart {
             ${this.formatHeading(this.value)}
           </div>
           <div data-element="body" class="column-chart__chart">
-            ${this._createColumnsTemplate() }
+            ${this._createColumnsTemplate()}
           </div>
         </div>
       </div>
