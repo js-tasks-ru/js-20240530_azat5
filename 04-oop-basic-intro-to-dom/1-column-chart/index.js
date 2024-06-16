@@ -10,7 +10,7 @@ export default class ColumnChart {
   }
 
   destroy() {
-    this.element.remove();
+    this.remove();
   }
 
   update(props = {}) {
@@ -53,9 +53,17 @@ export default class ColumnChart {
     return `<a href="${this.link}" class="column-chart__link">View all</a>`;
   }
 
+  _createChartClasses() {
+    let classes = ["column-chart"];
+    let loadingCondition = !this.data || this.data.length === 0;
+    if (loadingCondition) { classes.push("column-chart_loading"); }
+
+    return classes.join(" ");
+  }
+
   _createTemplate() {
     return `
-      <div class="column-chart ${this.data || "column-chart_loading"}" style="--chart-height: ${this.chartHeight}">
+      <div class="${this._createChartClasses()}" style="--chart-height: ${this.chartHeight}">
         <div class="column-chart__title">
           ${this.label}
           ${this._linkTemplate()}
