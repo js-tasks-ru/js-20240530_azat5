@@ -17,7 +17,7 @@ export default class ColumnChart {
     this._init(props);
   }
 
-  _init({data, label, value, link, formatHeading: formatHeading = (h) => h}) {
+  _init({data, label, value, link, formatHeading = h => h}) {
     this.data = data;
     this.label = label;
     this.value = value;
