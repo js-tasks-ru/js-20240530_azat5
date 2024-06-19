@@ -1,7 +1,21 @@
+const Helpers = {
+  getRowElements(bodyElement) {
+    return Array.from(bodyElement.querySelectorAll(".sortable-table__row"));
+  },
+  getCellText(rowElement, columnIndex) {
+    return rowElement.querySelectorAll(".sortable-table__cell")[columnIndex].textContent;
+  },
+  createElementFromTemplate(template) {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = template;
+    return tempDiv.firstElementChild;
+  }
+};
+
 export default class SortableTable {
   static sorters = {
     string: (a, b) => a.localeCompare(b, ["ru", "en"]),
-    number: (a, b) => a - b
+    number: (a, b) => parseInt(a) - parseInt(b)
   }
   activeSortColumnId;
   activeSortOrder;
@@ -15,9 +29,13 @@ export default class SortableTable {
   sort(columnId, order) {
     this.activeSortColumnId = columnId;
     this.activeSortOrder = order;
+    this.activeSortColumnIndex =
+      this
+      .headerConfig
+      .findIndex((item) => item.id === this.activeSortColumnId);
 
-    this._sortData();
-    this._rerender();
+    this._sortBodyInPlace();
+    this._rerenderHeader();
   }
 
   destroy() {
@@ -27,39 +45,38 @@ export default class SortableTable {
   get subElements() {
     return {
       body: this.element.querySelector(".sortable-table__body"),
+      header: this.element.querySelector(".sortable-table__header"),
     };
   }
 
-  _getSorter() {
-    const columnIndex =
-      this
-      .headerConfig
-      .findIndex((item) => item.id === this.activeSortColumnId);
+  _rerenderHeader() {
+    const headerElement = this.subElements.header;
+    const newHeaderElement =
+      Helpers.createElementFromTemplate(this._createHeaderTemplate());
 
-    return SortableTable.sorters[this.headerConfig[columnIndex].sortType];
+    headerElement.replaceWith(newHeaderElement);
   }
 
-  _sortData() {
+  _getSorter() {
+    const sortType = this.headerConfig[this.activeSortColumnIndex].sortType;
+    return SortableTable.sorters[sortType];
+  }
+
+  _sortBodyInPlace() {
     const sorter = this._getSorter();
 
-    this.data.sort((aData, bData) => {
-      const a = aData[this.activeSortColumnId];
-      const b = bData[this.activeSortColumnId];
-      return this.activeSortOrder === "asc" ? sorter(a, b) : sorter(b, a);
-    });
-  }
-
-  _rerender() {
-    const newElement = this._createElement();
-
-    this.element.replaceWith(newElement);
-    this.element = newElement;
+    Helpers.getRowElements(this.subElements.body)
+      .sort((aElement, bElement) => {
+        const a = Helpers.getCellText(aElement, this.activeSortColumnIndex);
+        const b = Helpers.getCellText(bElement, this.activeSortColumnIndex);
+        console.log(a);
+        return this.activeSortOrder === "asc" ? sorter(a, b) : sorter(b, a);
+      })
+      .forEach(element => this.subElements.body.appendChild(element));
   }
 
   _createElement() {
-    let tempDiv = document.createElement("div");
-    tempDiv.innerHTML = this._createTemplate();
-    return tempDiv.firstElementChild;
+    return Helpers.createElementFromTemplate(this._createTemplate());
   }
 
   _createTemplate() {
