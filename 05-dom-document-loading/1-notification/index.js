@@ -2,8 +2,7 @@ export default class NotificationMessage {
   static prevInstance;
   static clearPrevInstance(currentInstance) {
     if (NotificationMessage.prevInstance) {
-      clearTimeout(NotificationMessage.prevInstance.timer);
-      NotificationMessage.prevInstance.remove();
+      NotificationMessage.prevInstance.destroy();
     }
 
     NotificationMessage.prevInstance = currentInstance;
@@ -24,6 +23,7 @@ export default class NotificationMessage {
   }
 
   destroy() {
+    clearTimeout(this.timer);
     this.element.remove();
   }
 
