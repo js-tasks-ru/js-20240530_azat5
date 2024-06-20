@@ -8,8 +8,7 @@ const Helpers = {
 
 export default class Tooltip {
   static instance;
-  static showEventName = "pointerover";
-  static hideEventName = "pointerout";
+  static tooltipElementOffset = { x: 10, y: 0 };
 
   constructor() {
     if (Tooltip.instance) { return Tooltip.instance; }
@@ -19,13 +18,13 @@ export default class Tooltip {
   initialize() {
     this.element = Helpers.createElementFromTemplate(this._createTemplate());
 
-    document.body.addEventListener(Tooltip.showEventName, this._handleShow);
-    document.body.addEventListener(Tooltip.hideEventName, this._handleHide);
+    document.body.addEventListener("pointerover", this._handleShow);
+    document.body.addEventListener("pointerout", this._handleHide);
   }
 
   destroy() {
-    document.body.removeEventListener(Tooltip.showEventName, this._handleShow);
-    document.body.removeEventListener(Tooltip.hideEventName, this._handleHide);
+    document.body.removeEventListener("pointerover", this._handleShow);
+    document.body.removeEventListener("pointerout", this._handleHide);
     this.element.remove();
   }
 
@@ -38,16 +37,20 @@ export default class Tooltip {
     const targetElement = e.target.closest("[data-tooltip]");
     if (!targetElement) { return; }
 
-    const message = targetElement.dataset.tooltip;
-    this.element.textContent = message;
+    document.body.addEventListener("pointermove", this._handleMove);
+    this.render(targetElement.dataset.tooltip);
+  }
 
-    targetElement.append(this.element);
+  _handleMove = (e) => {
+    this.element.style.left = `${e.clientX + Tooltip.tooltipElementOffset.x}px`;
+    this.element.style.top = `${e.clientY + Tooltip.tooltipElementOffset.y}px`;
   }
 
   _handleHide = (e) => {
     const targetElement = e.target.closest("[data-tooltip]");
     if (!targetElement) { return; }
 
+    document.body.removeEventListener("pointermove", this._handleMove);
     this.element.remove();
   }
 
