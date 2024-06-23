@@ -69,7 +69,6 @@ export default class SortableTable {
       .sort((aElement, bElement) => {
         const a = Helpers.getCellText(aElement, this.activeSortColumnIndex);
         const b = Helpers.getCellText(bElement, this.activeSortColumnIndex);
-        console.log(a);
         return this.activeSortOrder === "asc" ? sorter(a, b) : sorter(b, a);
       })
       .forEach(element => this.subElements.body.appendChild(element));
