@@ -18,13 +18,13 @@ export default class Tooltip {
   initialize() {
     this.element = Helpers.createElementFromTemplate(this._createTemplate());
 
-    document.body.addEventListener("pointerover", this._handleShow);
-    document.body.addEventListener("pointerout", this._handleHide);
+    document.body.addEventListener("pointerover", this._handleDocumentPointerover);
+    document.body.addEventListener("pointerout", this._handleDocumentPointerout);
   }
 
   destroy() {
-    document.body.removeEventListener("pointerover", this._handleShow);
-    document.body.removeEventListener("pointerout", this._handleHide);
+    document.body.removeEventListener("pointerover", this._handleDocumentPointerover);
+    document.body.removeEventListener("pointerout", this._handleDocumentPointerout);
     this.element.remove();
   }
 
@@ -33,24 +33,24 @@ export default class Tooltip {
     document.body.append(this.element);
   }
 
-  _handleShow = (e) => {
+  _handleDocumentPointerover = (e) => {
     const targetElement = e.target.closest("[data-tooltip]");
     if (!targetElement) { return; }
 
-    document.body.addEventListener("pointermove", this._handleMove);
+    document.body.addEventListener("pointermove", this._handleDocumentPointermove);
     this.render(targetElement.dataset.tooltip);
   }
 
-  _handleMove = (e) => {
+  _handleDocumentPointermove = (e) => {
     this.element.style.left = `${e.clientX + Tooltip.tooltipElementOffset.x}px`;
     this.element.style.top = `${e.clientY + Tooltip.tooltipElementOffset.y}px`;
   }
 
-  _handleHide = (e) => {
+  _handleDocumentPointerout = (e) => {
     const targetElement = e.target.closest("[data-tooltip]");
     if (!targetElement) { return; }
 
-    document.body.removeEventListener("pointermove", this._handleMove);
+    document.body.removeEventListener("pointermove", this._handleDocumentPointermove);
     this.element.remove();
   }
 
