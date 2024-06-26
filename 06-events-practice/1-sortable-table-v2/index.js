@@ -30,7 +30,11 @@ export default class SortableTable extends SortableTableV1 {
 
     const columnId = cellElement.dataset.id;
     const order = cellElement.dataset.order === 'desc' ? 'asc' : 'desc';
-    this.sort(columnId, order);
+    this._sortFunction(columnId, order);
+  }
+
+  _sortFunction(id, order) {
+    this.sort(id, order);
   }
 
   _destroyEventListeners() {
