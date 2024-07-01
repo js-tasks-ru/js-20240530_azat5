@@ -30,15 +30,15 @@ export default class DoubleSlider {
     this.progressElement = this.element.querySelector(".range-slider__progress");
     this.fromElement = this.element.querySelector("[data-element=from]");
     this.toElement = this.element.querySelector("[data-element=to]");
-    this.element.addEventListener("pointerdown", this._handlePointerDown);
+    this.element.addEventListener("pointerdown", this._handleElementPointerdown);
   }
 
   destroy() {
-    this.element.removeEventListener("pointerdown", this._handlePointerDown);
+    this.element.removeEventListener("pointerdown", this._handleElementPointerdown);
     this.element.remove();
   }
 
-  _handlePointerDown = (e) => {
+  _handleElementPointerdown = (e) => {
     switch (e.target) {
     case this.thumbLeftElement:
       this.draggable = "left";
@@ -50,11 +50,11 @@ export default class DoubleSlider {
       return;
     }
 
-    document.addEventListener("pointermove", this._handlePointerMove);
-    document.addEventListener("pointerup", this._handlePointerUp);
+    document.addEventListener("pointermove", this._handleDocumentPointermove);
+    document.addEventListener("pointerup", this._handleDocumentPointerup);
   }
 
-  _handlePointerMove = (e) => {
+  _handleDocumentPointermove = (e) => {
     switch (this.draggable) {
     case "left":
       this.from =
@@ -73,10 +73,10 @@ export default class DoubleSlider {
     this._updateStylesAndLabels();
   }
 
-  _handlePointerUp = (_e) => {
+  _handleDocumentPointerup = (_e) => {
     this._dispatchEvent();
-    document.removeEventListener("pointerup", this._handlePointerUp);
-    document.removeEventListener("pointermove", this._handlePointerMove);
+    document.removeEventListener("pointerup", this._handleDocumentPointerup);
+    document.removeEventListener("pointermove", this._handleDocumentPointermove);
   }
 
   _calculateSelectedValue(moveEvent) {

@@ -16,7 +16,13 @@ export default class ColumnChart {
   update(newData) {
     this.data = newData;
 
-    this.element.replaceWith(this._createElement());
+    this._rerenderElement();
+  }
+
+  _rerenderElement() {
+    const oldElement = this.element;
+    this.element = this._createElement();
+    oldElement.replaceWith(this.element);
   }
 
   _init({data, label, value, link, formatHeading = h => h}) {
@@ -35,11 +41,12 @@ export default class ColumnChart {
   }
 
   _createColumnsTemplate() {
-    if (!this.data) { return ""; }
+    if (this._isLoading()) { return ""; }
 
-    let maxDataValue = Math.max(...this.data);
+    let columnValues = this._buildColumnValues();
+    let maxDataValue = Math.max(...columnValues);
     return (
-      this.data
+      columnValues
         .map((value) => {
           let height = Math.floor(this.chartHeight * value / maxDataValue);
           let percent = (100 * value / maxDataValue).toFixed();
@@ -57,8 +64,7 @@ export default class ColumnChart {
 
   _createChartClasses() {
     let classes = ["column-chart"];
-    let loadingCondition = !this.data || this.data.length === 0;
-    if (loadingCondition) { classes.push("column-chart_loading"); }
+    if (this._isLoading()) { classes.push("column-chart_loading"); }
 
     return classes.join(" ");
   }
@@ -80,5 +86,13 @@ export default class ColumnChart {
         </div>
       </div>
     `;
+  }
+
+  _buildColumnValues() {
+    return this.data;
+  }
+
+  _isLoading() {
+    return !this.data || this.data.length === 0;
   }
 }
