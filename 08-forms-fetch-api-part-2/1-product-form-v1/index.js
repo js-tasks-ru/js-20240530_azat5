@@ -83,10 +83,10 @@ export default class ProductForm {
     );
 
     if (this.productId) {
-      const event = new CustomEvent("product-updated");
+      const event = new CustomEvent("product-updated", { bubbles: true });
       this.element.dispatchEvent(event, productData);
     } else {
-      const event = new CustomEvent("product-saved");
+      const event = new CustomEvent("product-saved", { bubbles: true });
       this.element.dispatchEvent(event, productData);
     }
   }
