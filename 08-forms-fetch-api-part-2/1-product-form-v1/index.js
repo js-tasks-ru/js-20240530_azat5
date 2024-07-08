@@ -111,7 +111,7 @@ export default class ProductForm {
 ${escapeHtml(this.productData.description)}
             </textarea>
           </div>
-          <div class="form-group form-group__wide" data-element="sortable-list-container">
+          <div class="form-group form-group__wide" data-element="sortableListContainer">
             <label class="form-label">Фото</label>
             <div data-element="imageListContainer">
               <ul class="sortable-list">
@@ -165,23 +165,27 @@ ${escapeHtml(this.productData.description)}
   _createImagesTemplate() {
     const items =
       this.productData.images.map(({ url, source }, index) => {
-        return `
-          <li class="products-edit__imagelist-item sortable-list__item" style="">
-            <input type="hidden" name="images[${index}][url]" value="${url}">
-            <input type="hidden" name="images[${index}][source]" value="${source}">
-            <span>
-              <img src="icon-grab.svg" data-grab-handle="" alt="grab">
-              <img class="sortable-table__cell-img" alt="Image" src="${url}g">
-              <span>${source}</span>
-            </span>
-            <button type="button">
-              <img src="icon-trash.svg" data-delete-handle="" alt="delete">
-            </button>
-          </li>
-        `;
+        return this._createImageTemplate(url, source, index);
       });
 
     return items.join("");
+  }
+
+  _createImageTemplate(url, source, index) {
+    return `
+      <li class="products-edit__imagelist-item sortable-list__item" style="">
+        <input type="hidden" name="images[${index}][url]" value="${url}">
+        <input type="hidden" name="images[${index}][source]" value="${source}">
+        <span>
+          <img src="icon-grab.svg" data-grab-handle="" alt="grab">
+          <img class="sortable-table__cell-img" alt="Image" src="${url}g">
+          <span>${source}</span>
+        </span>
+        <button type="button">
+          <img src="icon-trash.svg" data-delete-handle="" alt="delete">
+        </button>
+      </li>
+    `;
   }
 
   _createStatusOptionsTemplate() {
@@ -217,6 +221,44 @@ ${escapeHtml(this.productData.description)}
     return options.join('');
   }
 
+  async _selectImage(e) {
+    const input = document.createElement('input');
+    input.type = 'file';
+
+    input.onchange = async () => {
+      const [file] = input.files;
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const { data: { link: url } } = await fetchJson(
+        "https://api.imgur.com/3/image",
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Client-ID ${IMGUR_CLIENT_ID}`,
+          },
+          body: formData,
+        }
+      );
+      const index =
+        this
+        .subElements
+        .imageListContainer
+        .querySelectorAll('.products-edit__imagelist-item')
+        .length;
+      const imageTemplate = this._createImageTemplate(url, file.name, index);
+      const imageElement = Helpers.createElementFromTemplate(imageTemplate);
+      this
+        .subElements
+        .imageListContainer
+        .querySelector('ul')
+        .append(imageElement);
+    };
+
+    const event = new MouseEvent('click');
+    input.dispatchEvent(event);
+  }
+
   _handleFormSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(this.subElements.productForm);
@@ -244,12 +286,24 @@ ${escapeHtml(this.productData.description)}
     }
   }
 
+  _handleSortableListContainerClick = (e) => {
+    const target = e.target;
+
+    if (target.closest('[name="uploadImage"]')) {
+      this._selectImage(e);
+    }
+  }
 
   _createEventListeners() {
     this
       .subElements
       .productForm
       .addEventListener('submit', this._handleFormSubmit);
+
+    this
+      .subElements
+      .sortableListContainer
+      .addEventListener('click', this._handleSortableListContainerClick);
   }
 
   _destroyEventListeners() {
@@ -257,6 +311,11 @@ ${escapeHtml(this.productData.description)}
       .subElements
       .productForm
       .removeEventListener('submit', this._handleFormSubmit);
+
+    this
+      .subElements
+      .sortableListContainer
+      .removeEventListener('click', this._handleSortableListContainerClick);
   }
 
   destroy() {
