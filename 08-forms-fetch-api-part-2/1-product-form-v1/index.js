@@ -62,6 +62,33 @@ export default class ProductForm {
 
     this._selectSubElements();
     this._createEventListeners();
+
+    return this.element;
+  }
+
+  async save() {
+    const formData = new FormData(this.subElements.productForm);
+    const productData = Helpers.formDataObject(formData);
+    const method = this.productId ? 'PATCH' : 'PUT';
+
+    await fetchJson(
+      "https://course-js.javascript.ru/api/rest/products",
+      {
+        method: method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productData),
+      }
+    );
+
+    if (this.productId) {
+      const event = new CustomEvent("product-updated");
+      this.element.dispatchEvent(event, productData);
+    } else {
+      const event = new CustomEvent("product-saved");
+      this.element.dispatchEvent(event, productData);
+    }
   }
 
   async _fetchCategories() {
@@ -102,12 +129,12 @@ export default class ProductForm {
           <div class="form-group form-group__half_left">
             <fieldset>
               <label class="form-label">Название товара</label>
-              <input required="" type="text" name="title" class="form-control" placeholder="Название товара" value="${escapeHtml(this.productData.title)}">
+              <input required="" type="text" name="title" id="title" class="form-control" placeholder="Название товара" value="${escapeHtml(this.productData.title)}">
             </fieldset>
           </div>
           <div class="form-group form-group__wide">
             <label class="form-label">Описание</label>
-            <textarea required="" class="form-control" name="description" data-element="productDescription" placeholder="Описание товара">
+            <textarea required="" class="form-control" name="description" id="description" data-element="productDescription" placeholder="Описание товара">
 ${escapeHtml(this.productData.description)}
             </textarea>
           </div>
@@ -122,27 +149,27 @@ ${escapeHtml(this.productData.description)}
           </div>
           <div class="form-group form-group__half_left">
             <label class="form-label">Категория</label>
-            <select class="form-control" name="subcategory">
+            <select class="form-control" name="subcategory" id="subcategory">
               ${this._createCategoryOptionsTemplate()}
             </select>
           </div>
           <div class="form-group form-group__half_left form-group__two-col">
             <fieldset>
               <label class="form-label">Цена ($)</label>
-              <input required="" type="number" name="price" class="form-control" placeholder="100" value="${escapeHtml(this.productData.price.toString())}">
+              <input required="" type="number" name="price" id="price" class="form-control" placeholder="100" value="${escapeHtml(this.productData.price.toString())}">
             </fieldset>
             <fieldset>
               <label class="form-label">Скидка ($)</label>
-              <input required="" type="number" name="discount" class="form-control" placeholder="0" value="${escapeHtml(this.productData.discount.toString())}">
+              <input required="" type="number" name="discount" id="discount" class="form-control" placeholder="0" value="${escapeHtml(this.productData.discount.toString())}">
             </fieldset>
           </div>
           <div class="form-group form-group__part-half">
             <label class="form-label">Количество</label>
-            <input required="" type="number" class="form-control" name="quantity" placeholder="1" value="${escapeHtml(this.productData.quantity.toString())}">
+            <input required="" type="number" class="form-control" name="quantity" id="quantity" placeholder="1" value="${escapeHtml(this.productData.quantity.toString())}">
           </div>
           <div class="form-group form-group__part-half">
             <label class="form-label">Статус</label>
-            <select class="form-control" name="status">
+            <select class="form-control" name="status" id="status">
               ${this._createStatusOptionsTemplate()}
             </select>
           </div>
@@ -178,7 +205,7 @@ ${escapeHtml(this.productData.description)}
         <input type="hidden" name="images[${index}][source]" value="${source}">
         <span>
           <img src="icon-grab.svg" data-grab-handle="" alt="grab">
-          <img class="sortable-table__cell-img" alt="Image" src="${url}g">
+          <img class="sortable-table__cell-img" alt="Image" src="${url}">
           <span>${source}</span>
         </span>
         <button type="button">
@@ -259,31 +286,9 @@ ${escapeHtml(this.productData.description)}
     input.dispatchEvent(event);
   }
 
-  _handleFormSubmit = async (event) => {
+  _handleFormSubmit = (event) => {
     event.preventDefault();
-    const formData = new FormData(this.subElements.productForm);
-    const productData = Helpers.formDataObject(formData);
-    const method = this.productId ? 'PATCH' : 'PUT';
-
-    await fetchJson(
-      "https://course-js.javascript.ru/api/rest/products",
-      {
-        method: method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(productData),
-      }
-    );
-
-    switch (method) {
-    case 'PATCH':
-      this.element.dispatchEvent('product-updated', productData);
-      break;
-    case 'PUT':
-      this.element.dispatchEvent('product-saved', productData);
-      break;
-    }
+    this.save();
   }
 
   _handleSortableListContainerClick = (e) => {
@@ -318,8 +323,12 @@ ${escapeHtml(this.productData.description)}
       .removeEventListener('click', this._handleSortableListContainerClick);
   }
 
-  destroy() {
+  remove() {
     this.element.remove();
+  }
+
+  destroy() {
+    this.remove();
     this._destroyEventListeners();
   }
 }
