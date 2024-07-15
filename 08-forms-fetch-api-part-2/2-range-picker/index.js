@@ -42,8 +42,6 @@ export default class RangePicker {
   }
 
   _resetDayClasses() {
-    let beetwen = false;
-
     if (this.isSelecting) { // hide all highlights
       const highlightedQuery =
         `
@@ -220,12 +218,11 @@ export default class RangePicker {
   _createDayTemplate(date) {
     const offsert = (date.getDay() + 6) % 7 + 1;
     const style = date.getDate() === 1 ? `--start-from: ${offsert}` : "";
-    let selectorClassName = "";
 
     return `
       <button
         type="button"
-        class="rangepicker__cell ${selectorClassName}"
+        class="rangepicker__cell"
         data-value="${date.toISOString()}"
         style="${style}">
         ${date.getDate()}
@@ -237,7 +234,7 @@ export default class RangePicker {
     const dayTemplates = [];
     const first = new Date(dayOfMonth.getFullYear(), dayOfMonth.getMonth(), 1);
     const last = new Date(dayOfMonth.getFullYear(), dayOfMonth.getMonth() + 1, 1);
-    for (let date = first; date < last; date.setDate(date.getDate() + 1)) {
+    for (const date = first; date < last; date.setDate(date.getDate() + 1)) {
       dayTemplates.push(this._createDayTemplate(date));
     }
     return dayTemplates.join("");
