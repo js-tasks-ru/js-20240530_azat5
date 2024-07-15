@@ -10,6 +10,7 @@ export default class RangePicker {
   subElements = {};
   isOpen = false;
   isSelecting = false;
+  isSelectorRendered = false;
 
   constructor({ from, to }) {
     this.from = from;
@@ -23,10 +24,19 @@ export default class RangePicker {
 
   destroy() {
     this._removeEventListeners();
+    this.remove();
+  }
+
+  remove() {
     this.element.remove();
   }
 
   _toggleSelector() {
+    if (!this.isSelectorRendered) {
+      this.subElements.selector.innerHTML = this._createSelectorTemplate();
+      this._resetDayClasses();
+      this.isSelectorRendered = true;
+    }
     this.element.classList.toggle("rangepicker_open");
     this.isOpen = !this.isOpen;
   }
@@ -83,9 +93,9 @@ export default class RangePicker {
   _handleDocumentClick = (e) => {
     if (e.target.closest(".rangepicker__selector")) { return; }
 
-    // if (this.isOpen) {
-    //   this._toggleSelector();
-    // }
+    if (this.isOpen) {
+      this._toggleSelector();
+    }
   }
 
   _handleSelectorClick = (e) => {
@@ -179,9 +189,7 @@ export default class RangePicker {
         <div class="rangepicker__input" data-element="input">
           ${this._createInputTemplate()}
         </div>
-        <div class="rangepicker__selector" data-element="selector">
-          ${this._createSelectorTemplate()}
-        </div>
+        <div class="rangepicker__selector" data-element="selector"></div>
       </div>
     `;
   }
@@ -200,11 +208,11 @@ export default class RangePicker {
   _createInputTemplate() {
     return `
       <span data-element="from">
-        ${this.from.toLocaleDateString()}
+        ${this.from.toLocaleDateString("ru-RU")}
       </span>
       -
       <span data-element="to">
-        ${this.to.toLocaleDateString()}
+        ${this.to.toLocaleDateString("ru-RU")}
       </span>
     `;
   }
@@ -213,14 +221,6 @@ export default class RangePicker {
     const offsert = (date.getDay() + 6) % 7 + 1;
     const style = date.getDate() === 1 ? `--start-from: ${offsert}` : "";
     let selectorClassName = "";
-
-    if (date.getTime() == this.from.getTime()) {
-      selectorClassName = "rangepicker__selected-from";
-    } else if (date.getTime() == this.to.getTime()) {
-      selectorClassName = "rangepicker__selected-to";
-    } else if (date > this.from && date < this.to) {
-      selectorClassName = "rangepicker__selected-between";
-    }
 
     return `
       <button
@@ -246,7 +246,7 @@ export default class RangePicker {
   _createMonthTemplate(dayOfMonth) {
     const monthName =
       dayOfMonth
-        .toLocaleString('default', { month: 'long' });
+        .toLocaleString('ru-RU', { month: 'long' });
     return `
       <div class="rangepicker__calendar">
         <div class="rangepicker__month-indicator">
