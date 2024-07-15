@@ -34,7 +34,7 @@ export default class RangePicker {
   _resetDayClasses() {
     let beetwen = false;
 
-    if (this.isSelecting) {
+    if (this.isSelecting) { // hide all highlights
       const highlightedQuery =
         `
           .rangepicker__selected-to,
@@ -46,7 +46,7 @@ export default class RangePicker {
         .selector
         .querySelectorAll(highlightedQuery)
         .forEach(element => element.classList = "rangepicker__cell");
-    } else {
+    } else { // highlight selected range
       this
         .subElements
         .selector
@@ -56,12 +56,11 @@ export default class RangePicker {
 
           if (date.getTime() === this.to.getTime()) {
             element.classList.add("rangepicker__selected-to");
-            beetwen = false;
           } else {
             element.classList.remove("rangepicker__selected-to");
           }
 
-          if (beetwen) {
+          if (this.from && this.to && date > this.from && date < this.to) {
             element.classList.add("rangepicker__selected-between");
           } else {
             element.classList.remove("rangepicker__selected-between");
@@ -69,7 +68,6 @@ export default class RangePicker {
 
           if (date.getTime() === this.from.getTime()) {
             element.classList.add("rangepicker__selected-from");
-            if (this.to) { beetwen = true; }
           } else {
             element.classList.remove("rangepicker__selected-from");
           }
