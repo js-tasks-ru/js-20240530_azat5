@@ -14,6 +14,8 @@ export default class RangePicker {
   constructor({ from, to }) {
     this.from = from;
     this.to = to;
+    this.firstMonthDay = from;
+    this.secondMonthDay = new Date(this.from.getFullYear(), this.from.getMonth() + 1);
     this.element = Helpers.createElementFromTemplate(this._createTemplate());
     this._selectSubElements();
     this._createEventListeners();
@@ -83,16 +85,26 @@ export default class RangePicker {
   _handleDocumentClick = (e) => {
     if (e.target.closest(".rangepicker__selector")) { return; }
 
-    if (this.isOpen) {
-      this._toggleSelector();
-    }
+    // if (this.isOpen) {
+    //   this._toggleSelector();
+    // }
   }
 
   _handleSelectorClick = (e) => {
-    const target = e.target.closest(".rangepicker__cell");
-    if (!target) { return; }
+    const cellElement = e.target.closest(".rangepicker__cell");
+    const leftArrowElement = e.target.closest(".rangepicker__selector-control-left");
+    const rightArrowElement = e.target.closest(".rangepicker__selector-control-right");
+    if (cellElement) {
+      this._pick(cellElement);
+    } else if (leftArrowElement) {
+      this._moveMonths("left");
+    } else if (rightArrowElement) {
+      this._moveMonths("right");
+    }
+  }
 
-    const date = new Date(target.dataset.value);
+  _pick(targetElement) {
+    const date = new Date(targetElement.dataset.value);
 
     this.isSelecting = !this.isSelecting;
     if (this.isSelecting) {
@@ -108,6 +120,40 @@ export default class RangePicker {
       this._toggleSelector();
     }
 
+    this._resetDayClasses();
+  }
+
+  _moveMonths(direction) {
+    const change = direction === "left" ? -1 : 1;
+    this.firstMonthDay = new Date(
+      this.firstMonthDay.getFullYear(),
+      this.firstMonthDay.getMonth() + change
+    );
+    this.secondMonthDay = new Date(
+      this.secondMonthDay.getFullYear(),
+      this.secondMonthDay.getMonth() + change
+    );
+    const [firstElement, secondElement] =
+      this
+        .subElements
+        .selector
+        .querySelectorAll(".rangepicker__calendar");
+
+    if (direction === "left") {
+      secondElement.remove();
+      firstElement.before(
+        Helpers.createElementFromTemplate(
+          this._createMonthTemplate(this.firstMonthDay)
+        )
+      );
+    } else {
+      firstElement.remove();
+      secondElement.after(
+        Helpers.createElementFromTemplate(
+          this._createMonthTemplate(this.secondMonthDay)
+        )
+      );
+    }
     this._resetDayClasses();
   }
 
@@ -130,21 +176,26 @@ export default class RangePicker {
   }
 
   _createTemplate() {
-    const nextMonth = new Date(this.from.getFullYear(), this.from.getMonth() + 1);
     return `
       <div class="rangepicker">
         <div class="rangepicker__input" data-element="input">
           ${this._createInputTemplate()}
         </div>
         <div class="rangepicker__selector" data-element="selector">
-          <div class="rangepicker__selector-arrow"></div>
-          <div class="rangepicker__selector-control-left"></div>
-          <div class="rangepicker__selector-control-right"></div>
-
-          ${this._createMonthTemplate(this.from)}
-          ${this._createMonthTemplate(nextMonth)}
+          ${this._createSelectorTemplate()}
         </div>
       </div>
+    `;
+  }
+
+  _createSelectorTemplate() {
+    return `
+      <div class="rangepicker__selector-arrow"></div>
+      <div class="rangepicker__selector-control-left"></div>
+      <div class="rangepicker__selector-control-right"></div>
+
+      ${this._createMonthTemplate(this.firstMonthDay)}
+      ${this._createMonthTemplate(this.secondMonthDay)}
     `;
   }
 
