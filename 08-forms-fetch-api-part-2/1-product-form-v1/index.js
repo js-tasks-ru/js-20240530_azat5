@@ -61,6 +61,7 @@ export default class ProductForm {
       Helpers.createElementFromTemplate(this._createTemplate());
 
     this._selectSubElements();
+    this._appendImageList();
     this._createEventListeners();
 
     return this.element;
@@ -140,11 +141,7 @@ ${escapeHtml(this.productData.description)}
           </div>
           <div class="form-group form-group__wide" data-element="sortableListContainer">
             <label class="form-label">Фото</label>
-            <div data-element="imageListContainer">
-              <ul class="sortable-list">
-                ${this._createImagesTemplate()}
-              </ul>
-            </div>
+            <div data-element="imageListContainer"></div>
             <button type="button" name="uploadImage" class="button-primary-outline"><span>Загрузить</span></button>
           </div>
           <div class="form-group form-group__half_left">
@@ -195,7 +192,12 @@ ${escapeHtml(this.productData.description)}
         return this._createImageTemplate(url, source, index);
       });
 
-    return items.join("");
+    return `<ul class="sortable-list">${items.join("")}</ul>`;
+  }
+
+  _appendImageList() {
+    this.subElements.imageListContainer.innerHTML =
+      this._createImagesTemplate();
   }
 
   _createImageTemplate(url, source, index) {

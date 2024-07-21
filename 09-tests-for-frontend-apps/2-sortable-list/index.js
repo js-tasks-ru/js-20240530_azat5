@@ -44,16 +44,18 @@ export default class SortableList {
       }
       const rect = item.getBoundingClientRect();
       return event.clientY > rect.top && event.clientY < rect.bottom;
-    });
+    }) || null;
 
-    // move placeholder if hovered elment changed
-    if (newHoveredElement && newHoveredElement !== this.hoveredElement) {
-      this.hoveredElement = newHoveredElement;
-      if (this.hoveredElement.compareDocumentPosition(this.placeholderElement) & Node.DOCUMENT_POSITION_FOLLOWING) {
-        this.hoveredElement.before(this.placeholderElement);
-      } else {
-        this.hoveredElement.after(this.placeholderElement);
-      }
+    if (newHoveredElement === this.hoveredElement) { return; }
+
+    this.hoveredElement = newHoveredElement;
+    if (!this.hoveredElement) { return; }
+
+    // move placeholder if hovered element changed
+    if (this.hoveredElement.compareDocumentPosition(this.placeholderElement) & Node.DOCUMENT_POSITION_FOLLOWING) {
+      this.hoveredElement.before(this.placeholderElement);
+    } else {
+      this.hoveredElement.after(this.placeholderElement);
     }
   }
 
@@ -114,6 +116,8 @@ export default class SortableList {
     } else {
       return;
     }
+
+    event.preventDefault();
   }
 
   _handleDocumentPointerup = () => {
